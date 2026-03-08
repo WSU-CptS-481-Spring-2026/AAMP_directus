@@ -36,7 +36,9 @@ onMounted(async () => {
 	watch(
 		() => props.modelValue,
 		() => {
-			if (props.modelValue) {
+		//added guard clause to test for dynamic value and if so it clears the field
+		//we could change it so that when it Sees $NOW it used the current time
+			if (props.modelValue&&!isDynamicValue(props.modelValue)) {
 				flatpickr?.setDate(props.modelValue, false);
 			} else {
 				flatpickr?.clear();
@@ -125,6 +127,9 @@ function setToNow() {
 	flatpickr?.setDate(new Date(), true);
 }
 
+function isDynamicValue(value:string):boolean{
+	return value.startsWith('$');
+}
 function enterToClose(e: any) {
 	if (e.key !== 'Enter') return;
 	flatpickr?.close();
