@@ -104,7 +104,18 @@ const treeList = computed(() => {
 });
 
 const addAll = () => {
-	const allFields = unref(treeList).map((field) => field.field);
+	const allFields = unref(treeList)
+		.filter((field) => {
+			// Skip disabled fields
+			if (field.disabled) return false;
+
+			// Skip alias fields that are not groups (accordion, etc.)
+			if (field.type === 'alias' && !field.group) return false;
+
+			return true;
+		})
+		.map((field) => field.key);
+
 	emit('add', unref(allFields));
 };
 

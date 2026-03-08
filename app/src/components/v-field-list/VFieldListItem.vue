@@ -50,7 +50,17 @@ const selectAllDisabled = computed(() => props.field.children?.every((field: Fie
 const addAll = () => {
 	if (!props.field.children) return;
 
-	const selectedFields = props.field.children.map((selectableField) => selectableField.key);
+	const selectedFields = props.field.children
+		.filter((selectableField: FieldInfo) => {
+			// Skip disabled fields
+			if (selectableField.disabled) return false;
+
+			// Skip alias fields that are not groups (accordion, etc.)
+			if (selectableField.type === 'alias' && !selectableField.group) return false;
+
+			return true;
+		})
+		.map((selectableField: FieldInfo) => selectableField.key);
 
 	emit('add', selectedFields);
 };
