@@ -2,6 +2,7 @@ import http from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { useEnv } from '@directus/env';
 import { Router } from 'express';
+import qs from 'qs';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import createApp from './app.js';
 
@@ -69,6 +70,7 @@ beforeEach(() => {
 		ROBOTS_TXT: 'User-agent: *\nDisallow: /',
 		ROOT_REDIRECT: './admin',
 		IP_TRUST_PROXY: true,
+		QUERYSTRING_MAX_PARSE_DEPTH: 2,
 	});
 });
 
@@ -221,5 +223,32 @@ describe('createApp', async () => {
 				],
 			});
 		});
+	});
+
+	describe('Query Parser', () => {
+		let queryParser: (str: string) => any;
+
+		beforeEach(async () => {
+			const app = await createApp();
+			queryParser = app.get('query parser');
+		});
+
+		test('parses more than 21 array parameters', () => {
+			// qs default arrayLimit is 20 — indices above that are treated as object keys
+			const items = Array.from({ length: 50 }, (_, i) => `items[]=${i}`).join('&');
+			const result = queryParser(items) as { items: string[] };
+
+			expect(Array.isArray(result.items)).toBe(true);
+			expect(result.items.length).toBe(50);
+		});
+
+		test('parses exactly 21 parameters as an array (regression boundary)', () => {
+			const items = Array.from({ length: 21 }, (_, i) => `items[]=${i}`).join('&');
+			const result = queryParser(items) as { items: string[] };
+
+			expect(Array.isArray(result.items)).toBe(true);
+			expect(result.items.length).toBe(21);
+		});
+
 	});
 });
