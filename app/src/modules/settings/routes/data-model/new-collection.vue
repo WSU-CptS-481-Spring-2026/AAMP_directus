@@ -137,7 +137,7 @@ async function save() {
 			title: t('collection_created'),
 		});
 
-		router.replace(`/settings/data-model/${collectionName.value}`);
+		router.replace({ name: 'settings-fields', params: { collection: collectionName.value } });
 	} catch (error) {
 		unexpectedError(error);
 	} finally {

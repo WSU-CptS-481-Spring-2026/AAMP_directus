@@ -37,8 +37,8 @@ const bookmarkID = computed(() => (props.bookmark ? +props.bookmark : null));
 const selection = ref<Item[]>([]);
 const { info: currentCollection } = useCollection('directus_translations');
 
-const addNewLink = computed<string>(() => {
-	return `/settings/translations/+`;
+const addNewLink = computed(() => {
+	return { name: 'settings-translations-item', params: { primaryKey: '+' } };
 });
 
 const { layout, layoutOptions, layoutQuery, filter, search, resetPreset, refreshInterval } = usePreset(
@@ -190,7 +190,7 @@ function clearFilters() {
 						{{ $t('no_custom_translations_copy') }}
 
 						<template #append>
-							<VButton :to="`/settings/translations/+`">{{ $t('create_custom_translation') }}</VButton>
+							<VButton :to="{ name: 'settings-translations-item', params: { primaryKey: '+' } }">{{ $t('create_custom_translation') }}</VButton>
 						</template>
 					</VInfo>
 				</template>

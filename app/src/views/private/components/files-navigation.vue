@@ -43,14 +43,16 @@ function onClick(target: FolderTarget) {
 	if (props.customTargetHandler) {
 		props.customTargetHandler(target);
 	} else {
-		const path = ['files'];
-		if (target.folder) path.push('folders', target.folder);
-
-		if (target.special) {
-			path.push(target.special);
+		if (target.folder) {
+			router.push({ name: 'folders-collection', params: { folder: target.folder } });
+		} else if (target.special) {
+			if (target.special === 'all') router.push('/files/all');
+			else if (target.special === 'mine') router.push('/files/mine');
+			else if (target.special === 'recent') router.push('/files/recent');
+			else router.push({ name: 'files-collection' });
+		} else {
+			router.push({ name: 'files-collection' });
 		}
-
-		router.push(`/${path.join('/')}`);
 	}
 }
 

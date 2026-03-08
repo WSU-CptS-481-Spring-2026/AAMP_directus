@@ -69,7 +69,7 @@ async function onSubmit() {
 			const currentUser = userStore.currentUser;
 
 			if (currentUser && 'id' in currentUser) {
-				router.push(`/users/${currentUser.id}`);
+				router.push({ name: 'users-item', params: { primaryKey: currentUser.id } });
 			} else {
 				router.push('/login');
 			}

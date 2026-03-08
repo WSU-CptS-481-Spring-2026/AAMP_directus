@@ -23,7 +23,7 @@ const router = useRouter();
 const { roles, roleTree, openRoles, loading } = useNavigation(currentRole);
 
 function handleClick({ role }: { role: string }) {
-	router.push(`/users/roles/${role}`);
+	router.push({ name: 'roles-collection', params: { role } });
 }
 </script>
 

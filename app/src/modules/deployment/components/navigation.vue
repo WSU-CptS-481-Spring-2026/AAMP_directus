@@ -84,7 +84,7 @@ onMounted(async () => {
 					<VListItem
 						v-for="project in provider.projects"
 						:key="project.id"
-						:to="`/deployments/${provider.provider}/${project.id}/runs`"
+						:to="{ name: 'deployments-provider-runs', params: { provider: provider.provider, projectId: project.id } }"
 						:active="currentProjectId === project.id"
 					>
 						<VListItemIcon><VIcon :name="provider.provider" /></VListItemIcon>
@@ -94,7 +94,7 @@ onMounted(async () => {
 					</VListItem>
 
 					<VListItem
-						:to="`/deployments/${provider.provider}/settings`"
+						:to="{ name: 'deployments-provider-settings', params: { provider: provider.provider } }"
 						:active="isSettingsPage && currentProviderKey === provider.provider"
 					>
 						<VListItemIcon><VIcon name="settings" /></VListItemIcon>

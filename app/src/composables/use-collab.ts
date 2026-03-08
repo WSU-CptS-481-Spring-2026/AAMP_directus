@@ -411,7 +411,11 @@ export function useCollab(
 		users.value = [];
 		focused.value = {};
 
-		router.push(`/content/${item.value ? collection.value : ''}`);
+		if (item.value) {
+			router.push({ name: 'content-item', params: { collection: collection.value, primaryKey: item.value } });
+		} else {
+			router.push({ name: 'content-collection', params: { collection: collection.value } });
+		}
 	}
 
 	async function receiveJoin(message: JoinMessage) {
@@ -420,13 +424,13 @@ export function useCollab(
 		const user = existingInfo
 			? existingInfo
 			: await sdk
-					.request(
-						readUser(message.user, {
-							// TODO: Update this once https://github.com/directus/directus/issues/26558 is Done
-							fields: ['id', 'first_name', 'last_name', { avatar: ['id', 'modified_on'] }] as (keyof DirectusUser)[],
-						}),
-					)
-					.catch(() => ({}));
+				.request(
+					readUser(message.user, {
+						// TODO: Update this once https://github.com/directus/directus/issues/26558 is Done
+						fields: ['id', 'first_name', 'last_name', { avatar: ['id', 'modified_on'] }] as (keyof DirectusUser)[],
+					}),
+				)
+				.catch(() => ({}));
 
 		users.value = [...users.value, { ...user, id: message.user, color: message.color, connection: message.connection }];
 	}
