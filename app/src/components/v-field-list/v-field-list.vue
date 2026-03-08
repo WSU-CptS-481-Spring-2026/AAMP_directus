@@ -2,6 +2,7 @@
 import { Field } from '@directus/types';
 import { debounce, isNil } from 'lodash';
 import { computed, ref, toRefs, unref, watch } from 'vue';
+import { filterSelectableFields } from './filter-selectable-fields';
 import VFieldListItem from './VFieldListItem.vue';
 import VDivider from '@/components/v-divider.vue';
 import VIcon from '@/components/v-icon/v-icon.vue';
@@ -104,19 +105,9 @@ const treeList = computed(() => {
 });
 
 const addAll = () => {
-	const allFields = unref(treeList)
-		.filter((field) => {
-			// Skip disabled fields
-			if (field.disabled) return false;
-
-			// Skip alias fields that are not groups (accordion, etc.)
-			if (field.type === 'alias' && !field.group) return false;
-
-			return true;
-		})
-		.map((field) => field.key);
-
-	emit('add', unref(allFields));
+	const selectableFields = filterSelectableFields(unref(treeList));
+	const allFields = selectableFields.map((field) => field.key);
+	emit('add', allFields);
 };
 
 function filter(field: Field, parent?: FieldNode): boolean {

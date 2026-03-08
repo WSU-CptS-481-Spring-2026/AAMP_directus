@@ -2,6 +2,7 @@
 import formatTitle from '@directus/format-title';
 import { getFunctionsForType } from '@directus/utils';
 import { computed } from 'vue';
+import { filterSelectableFields } from './filter-selectable-fields';
 import VDivider from '@/components/v-divider.vue';
 import VIcon from '@/components/v-icon/v-icon.vue';
 import VListGroup from '@/components/v-list-group.vue';
@@ -50,17 +51,8 @@ const selectAllDisabled = computed(() => props.field.children?.every((field: Fie
 const addAll = () => {
 	if (!props.field.children) return;
 
-	const selectedFields = props.field.children
-		.filter((selectableField: FieldInfo) => {
-			// Skip disabled fields
-			if (selectableField.disabled) return false;
-
-			// Skip alias fields that are not groups (accordion, etc.)
-			if (selectableField.type === 'alias' && !selectableField.group) return false;
-
-			return true;
-		})
-		.map((selectableField: FieldInfo) => selectableField.key);
+	const selectableFields = filterSelectableFields(props.field.children as FieldInfo[]);
+	const selectedFields = selectableFields.map((selectableField: FieldInfo) => selectableField.key);
 
 	emit('add', selectedFields);
 };
