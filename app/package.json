@@ -27,6 +27,7 @@
 		"story:dev": "histoire dev",
 		"story:preview": "histoire preview",
 		"test": "vitest run",
+		"test-issue": "vitest run src/modules/verify-named-routes.test.ts",
 		"test:watch": "vitest",
 		"test:coverage": "vitest run --coverage",
 		"typecheck": "vue-tsc --noEmit"
