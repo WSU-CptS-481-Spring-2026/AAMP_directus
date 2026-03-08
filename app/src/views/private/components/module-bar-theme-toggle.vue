@@ -46,6 +46,8 @@ async function toggleTheme() {
 		if (userStore.currentUser && 'appearance' in userStore.currentUser) {
 			userStore.currentUser.appearance = newAppearance;
 		}
+	} catch {
+		// Fail silently - theme will remain unchanged
 	} finally {
 		isUpdating.value = false;
 	}
