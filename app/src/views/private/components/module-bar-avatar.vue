@@ -4,6 +4,7 @@ import { User } from '@directus/types';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { RouterLink } from 'vue-router';
+import ModuleBarThemeToggle from './module-bar-theme-toggle.vue';
 import VAvatar from '@/components/v-avatar.vue';
 import VBadge from '@/components/v-badge.vue';
 import VButton from '@/components/v-button.vue';
@@ -53,6 +54,8 @@ const userFullName = userStore.fullName ?? undefined;
 
 <template>
 	<div class="module-bar-avatar">
+		<ModuleBarThemeToggle />
+
 		<VBadge :value="unread" :disabled="unread == 0" class="notifications-badge">
 			<VButton
 				v-tooltip.right="$t('notifications')"
