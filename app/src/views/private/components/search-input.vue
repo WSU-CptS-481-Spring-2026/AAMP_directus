@@ -204,7 +204,7 @@ function emitValue() {
 				/>
 
 				<TransitionExpand @before-enter="filterBorder = true" @after-leave="filterBorder = false">
-					<div v-show="filterActive" ref="filterElement" class="filter" :class="{ active }">
+					<div v-show="filterActive" ref="filterElement" class="filter" :class="{ active: filterActive }">
 						<InterfaceSystemFilter
 							class="filter-input"
 							inline
@@ -332,8 +332,8 @@ function emitValue() {
 		margin-inline-end: var(--icon-filter-margin-right);
 	}
 
-	&:focus-within,
-	&:not(.disabled):hover {
+	&:not(.filter-active):focus-within,
+	&:not(.disabled):not(.filter-active):hover {
 		border-color: var(--theme--form--field--input--border-color-hover);
 	}
 
@@ -374,6 +374,7 @@ function emitValue() {
 
 	&.filter-active {
 		inline-size: 100%;
+		border-color: var(--theme--form--field--input--border-color-focus);
 
 		.icon-filter {
 			--v-icon-color: var(--theme--primary);
@@ -411,7 +412,7 @@ function emitValue() {
 			inset-block-end: calc(-1 * var(--theme--border-width));
 			inline-size: auto;
 			block-size: var(--theme--border-width);
-			background-color: var(--theme--border-color-subdued);
+			background-color: var(--theme--form--field--input--border-color-focus);
 			content: '';
 			pointer-events: none;
 		}
