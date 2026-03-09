@@ -29,6 +29,7 @@ import { fetchPolicies } from '../permissions/lib/fetch-policies.js';
 import { fetchAllowedFieldMap } from '../permissions/modules/fetch-allowed-field-map/fetch-allowed-field-map.js';
 import { reduceSchema } from '../utils/reduce-schema.js';
 import { GraphQLService } from './graphql/index.js';
+import { isAdmin } from '../utils/isAdmin.js';
 
 const env = useEnv();
 
@@ -70,7 +71,8 @@ class OASSpecsService implements SpecificationSubService {
 		let schemaForSpec = this.schema;
 		let permissions: Permission[] = [];
 
-		if (this.accountability && this.accountability.admin !== true) {
+		if (this.accountability&&!isAdmin(this.accountability)) {
+
 			const allowedFields = await fetchAllowedFieldMap(
 				{
 					accountability: this.accountability,
@@ -132,7 +134,7 @@ class OASSpecsService implements SpecificationSubService {
 
 		for (const systemTag of systemTags) {
 			// Check if necessary authentication level is given
-			if (systemTag['x-authentication'] === 'admin' && !this.accountability?.admin) continue;
+			if (systemTag['x-authentication'] === 'admin' && !isAdmin(this.accountability??null)) continue;
 			if (systemTag['x-authentication'] === 'user' && !this.accountability?.user) continue;
 
 			// Remaining system tags that don't have an associated collection are publicly available
@@ -191,7 +193,7 @@ class OASSpecsService implements SpecificationSubService {
 							}
 
 							const hasPermission =
-								this.accountability?.admin === true ||
+								isAdmin(this.accountability??null)||
 								'x-collection' in tag === false ||
 								!!permissions.find(
 									(permission) =>
@@ -221,7 +223,7 @@ class OASSpecsService implements SpecificationSubService {
 
 				for (const method of methods) {
 					const hasPermission =
-						this.accountability?.admin === true ||
+						isAdmin(this.accountability??null)||
 						!!permissions.find(
 							(permission) =>
 								permission.collection === collection && permission.action === this.getActionForMethod(method),

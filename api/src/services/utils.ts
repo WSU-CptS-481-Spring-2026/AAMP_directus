@@ -8,6 +8,7 @@ import emitter from '../emitter.js';
 import { fetchAllowedFields } from '../permissions/modules/fetch-allowed-fields/fetch-allowed-fields.js';
 import { validateAccess } from '../permissions/modules/validate-access/validate-access.js';
 import { shouldClearCache } from '../utils/should-clear-cache.js';
+import { isAdmin } from '../utils/isAdmin.js';
 
 export class UtilsService {
 	knex: Knex;
@@ -31,7 +32,7 @@ export class UtilsService {
 			throw new InvalidPayloadError({ reason: `Collection "${collection}" doesn't have a sort field` });
 		}
 
-		if (this.accountability && this.accountability.admin !== true) {
+		if (this.accountability &&!isAdmin(this.accountability)) {
 			await validateAccess(
 				{
 					accountability: this.accountability,
@@ -157,7 +158,7 @@ export class UtilsService {
 	}
 
 	async clearCache({ system }: { system: boolean }): Promise<void> {
-		if (this.accountability?.admin !== true) {
+		if (!isAdmin(this.accountability??null)) {
 			throw new ForbiddenError();
 		}
 

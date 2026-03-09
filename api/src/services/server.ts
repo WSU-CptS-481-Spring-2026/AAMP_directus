@@ -17,6 +17,7 @@ import { SERVER_ONLINE } from '../server.js';
 import { getStorage } from '../storage/index.js';
 import { getAllowedLogLevels } from '../utils/get-allowed-log-levels.js';
 import { SettingsService } from './settings.js';
+import { isAdmin } from '../utils/isAdmin.js';
 
 const env = useEnv();
 const logger = useLogger();
@@ -124,7 +125,7 @@ export class ServerService {
 				info['websocket'].collaborativeEditing = toBoolean(env['WEBSOCKETS_COLLAB_ENABLED']);
 
 				info['websocket'].logs =
-					toBoolean(env['WEBSOCKETS_LOGS_ENABLED']) && this.accountability.admin
+					toBoolean(env['WEBSOCKETS_LOGS_ENABLED']) && isAdmin(this.accountability)
 						? {
 								allowedLogLevels: getAllowedLogLevels((env['WEBSOCKETS_LOGS_LEVEL'] as string) || 'info'),
 							}
@@ -219,7 +220,7 @@ export class ServerService {
 			if (data.status === 'error') break;
 		}
 
-		if (this.accountability?.admin !== true) {
+		if (!isAdmin(this.accountability??null)) {
 			return { status: data.status };
 		} else {
 			return data;

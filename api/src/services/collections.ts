@@ -35,6 +35,7 @@ import { getCollectionMetaUpdates } from './fields/get-collection-meta-updates.j
 import { getCollectionRelationList } from './fields/get-collection-relation-list.js';
 import { FieldsService } from './fields.js';
 import { ItemsService } from './items.js';
+import { isAdmin } from '../utils/isAdmin.js';
 
 export class CollectionsService {
 	knex: Knex;
@@ -61,7 +62,7 @@ export class CollectionsService {
 	 * Create a single new collection
 	 */
 	async createOne(payload: RawCollection, opts?: FieldMutationOptions): Promise<string> {
-		if (this.accountability && this.accountability.admin !== true) {
+		if (this.accountability &&!isAdmin(this.accountability)) {
 			throw new ForbiddenError();
 		}
 
@@ -324,7 +325,7 @@ export class CollectionsService {
 
 		meta.push(...systemCollectionRows);
 
-		if (this.accountability && this.accountability.admin !== true) {
+		if (this.accountability && !isAdmin(this.accountability)) {
 			const collectionsGroups: { [key: string]: string } = meta.reduce(
 				(meta, item) => ({
 					...meta,
@@ -436,7 +437,7 @@ export class CollectionsService {
 	 * Update a single collection by name
 	 */
 	async updateOne(collectionKey: string, data: Partial<Collection>, opts?: MutationOptions): Promise<string> {
-		if (this.accountability && this.accountability.admin !== true) {
+		if (this.accountability &&!isAdmin(this.accountability)) {
 			throw new ForbiddenError();
 		}
 
@@ -503,7 +504,7 @@ export class CollectionsService {
 	 * Update multiple collections in a single transaction
 	 */
 	async updateBatch(data: Partial<Collection>[], opts?: MutationOptions): Promise<string[]> {
-		if (this.accountability && this.accountability.admin !== true) {
+		if (this.accountability && !isAdmin(this.accountability)) {
 			throw new ForbiddenError();
 		}
 
@@ -564,7 +565,7 @@ export class CollectionsService {
 	 * Update multiple collections by name
 	 */
 	async updateMany(collectionKeys: string[], data: Partial<Collection>, opts?: MutationOptions): Promise<string[]> {
-		if (this.accountability && this.accountability.admin !== true) {
+		if (this.accountability && !isAdmin(this.accountability)) {
 			throw new ForbiddenError();
 		}
 
@@ -613,7 +614,7 @@ export class CollectionsService {
 	 * delete any fields, presets, activity, revisions, and permissions relating to this collection
 	 */
 	async deleteOne(collectionKey: string, opts?: MutationOptions): Promise<string> {
-		if (this.accountability && this.accountability.admin !== true) {
+		if (this.accountability && !isAdmin(this.accountability)) {
 			throw new ForbiddenError();
 		}
 
@@ -796,7 +797,7 @@ export class CollectionsService {
 	 * Delete multiple collections by key
 	 */
 	async deleteMany(collectionKeys: string[], opts?: MutationOptions): Promise<string[]> {
-		if (this.accountability && this.accountability.admin !== true) {
+		if (this.accountability && !isAdmin(this.accountability)) {
 			throw new ForbiddenError();
 		}
 

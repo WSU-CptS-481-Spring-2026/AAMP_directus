@@ -49,6 +49,7 @@ import { getCollectionRelationList } from './fields/get-collection-relation-list
 import { ItemsService } from './items.js';
 import { PayloadService } from './payload.js';
 import { RelationsService } from './relations.js';
+import { isAdmin } from '../utils/isAdmin.js';
 
 const systemFieldRows = getSystemFieldRowsWithAuthProviders();
 const env = useEnv();
@@ -229,7 +230,7 @@ export class FieldsService {
 		);
 
 		// Filter the result so we only return the fields you have read access to
-		if (this.accountability && this.accountability.admin !== true) {
+		if (this.accountability && !isAdmin(this.accountability)) {
 			const policies = await fetchPolicies(this.accountability, { knex: this.knex, schema: this.schema });
 
 			const permissions = await fetchPermissions(
@@ -281,7 +282,7 @@ export class FieldsService {
 	}
 
 	async readOne(collection: string, field: string): Promise<Record<string, any>> {
-		if (this.accountability && this.accountability.admin !== true) {
+		if (this.accountability && !isAdmin(this.accountability)) {
 			await validateAccess(
 				{
 					accountability: this.accountability,
@@ -362,7 +363,7 @@ export class FieldsService {
 		table?: Knex.CreateTableBuilder, // allows collection creation to
 		opts?: FieldMutationOptions,
 	): Promise<void> {
-		if (this.accountability && this.accountability.admin !== true) {
+		if (this.accountability && !isAdmin(this.accountability)) {
 			throw new ForbiddenError();
 		}
 
@@ -501,7 +502,7 @@ export class FieldsService {
 	}
 
 	async updateField(collection: string, field: RawField, opts?: FieldMutationOptions): Promise<string> {
-		if (this.accountability && this.accountability.admin !== true) {
+		if (this.accountability && !isAdmin(this.accountability)) {
 			throw new ForbiddenError();
 		}
 
@@ -695,7 +696,7 @@ export class FieldsService {
 	}
 
 	async deleteField(collection: string, field: string, opts?: MutationOptions): Promise<void> {
-		if (this.accountability && this.accountability.admin !== true) {
+		if (this.accountability && !isAdmin(this.accountability)) {
 			throw new ForbiddenError();
 		}
 

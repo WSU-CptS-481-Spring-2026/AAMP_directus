@@ -37,6 +37,7 @@ import { NameDeduper } from './assets/name-deduper.js';
 import { getSharpInstance } from './files/lib/get-sharp-instance.js';
 import { FilesService } from './files.js';
 import { FoldersService } from './folders.js';
+import { isAdmin } from '../utils/isAdmin.js';
 
 const env = useEnv();
 const logger = useLogger();
@@ -224,7 +225,7 @@ export class AssetsService {
 
 		let allowedFields: string[] = ['*'];
 
-		if (!systemPublicKeys.includes(id) && this.accountability && this.accountability.admin !== true) {
+		if (!systemPublicKeys.includes(id) && this.accountability && !isAdmin(this.accountability)) {
 			// Use validateItemAccess to check access and get allowed fields
 			const { allowedRootFields, accessAllowed } = await validateItemAccess(
 				{

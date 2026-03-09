@@ -29,6 +29,7 @@ import { getDefaultIndexName } from '../utils/get-default-index-name.js';
 import { getSchema } from '../utils/get-schema.js';
 import { transaction } from '../utils/transaction.js';
 import { ItemsService } from './items.js';
+import { isAdmin } from '../utils/isAdmin.js';
 
 const env = useEnv();
 
@@ -132,7 +133,7 @@ export class RelationsService {
 	}
 
 	async readOne(collection: string, field: string): Promise<Relation> {
-		if (this.accountability && this.accountability.admin !== true) {
+		if (this.accountability &&!isAdmin(this.accountability)) {
 			await validateAccess(
 				{
 					accountability: this.accountability,
@@ -189,7 +190,7 @@ export class RelationsService {
 	 * Create a new relationship / foreign key constraint
 	 */
 	async createOne(relation: Partial<Relation>, opts?: MutationOptions): Promise<void> {
-		if (this.accountability && this.accountability.admin !== true) {
+		if (this.accountability && !isAdmin(this.accountability)) {
 			throw new ForbiddenError();
 		}
 
@@ -317,7 +318,7 @@ export class RelationsService {
 		relation: Partial<Relation>,
 		opts?: MutationOptions,
 	): Promise<void> {
-		if (this.accountability && this.accountability.admin !== true) {
+		if (this.accountability && !isAdmin(this.accountability)) {
 			throw new ForbiddenError();
 		}
 
@@ -437,7 +438,7 @@ export class RelationsService {
 	 * Delete an existing relationship
 	 */
 	async deleteOne(collection: string, field: string, opts?: MutationOptions): Promise<void> {
-		if (this.accountability && this.accountability.admin !== true) {
+		if (this.accountability && !isAdmin(this.accountability)) {
 			throw new ForbiddenError();
 		}
 
@@ -567,7 +568,7 @@ export class RelationsService {
 	 * permissions to
 	 */
 	private async filterForbidden(relations: Relation[]): Promise<Relation[]> {
-		if (this.accountability === null || this.accountability?.admin === true) return relations;
+		if (this.accountability === null ||isAdmin(this.accountability??null)) return relations;
 
 		const allowedFields = await fetchAllowedFieldMap(
 			{

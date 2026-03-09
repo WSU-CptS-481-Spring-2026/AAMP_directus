@@ -7,6 +7,7 @@ import { fetchPermissions } from '../permissions/lib/fetch-permissions.js';
 import { fetchPolicies } from '../permissions/lib/fetch-policies.js';
 import { getCases } from '../permissions/modules/process-ast/lib/get-cases.js';
 import { validateAccess } from '../permissions/modules/validate-access/validate-access.js';
+import { isAdmin } from '../utils/isAdmin.js';
 
 export class MetaService {
 	knex: Knex;
@@ -45,7 +46,7 @@ export class MetaService {
 	async filterCount(collection: string, query: Query): Promise<number> {
 		let permissions: Permission[] = [];
 
-		if (this.accountability && this.accountability.admin !== true) {
+		if (this.accountability &&!isAdmin(this.accountability)) {
 			const context = { knex: this.knex, schema: this.schema };
 
 			await validateAccess(

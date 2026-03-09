@@ -2,6 +2,7 @@ import type { AbstractServiceOptions, Folder } from '@directus/types';
 import { validateAccess } from '../permissions/modules/validate-access/validate-access.js';
 import { NameDeduper } from './assets/name-deduper.js';
 import { ItemsService } from './items.js';
+import { isAdmin } from '../utils/isAdmin.js';
 
 export class FoldersService extends ItemsService<Folder> {
 	constructor(options: AbstractServiceOptions) {
@@ -33,7 +34,7 @@ export class FoldersService extends ItemsService<Folder> {
 	 * - If a folder has no name, its ID will be used as a fallback.
 	 */
 	async buildTree(root: string) {
-		if (this.accountability && this.accountability.admin !== true) {
+		if (this.accountability && !isAdmin(this.accountability)) {
 			await validateAccess(
 				{
 					collection: 'directus_folders',

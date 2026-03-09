@@ -29,6 +29,7 @@ import { Url } from '../utils/url.js';
 import { ItemsService } from './items.js';
 import { MailService } from './mail/index.js';
 import { SettingsService } from './settings.js';
+import { isAdmin } from '../utils/isAdmin.js';
 
 const env = useEnv();
 const logger = useLogger();
@@ -280,7 +281,7 @@ export class UsersService extends ItemsService {
 			}
 
 			if (data['provider'] !== undefined) {
-				if (this.accountability && this.accountability.admin !== true) {
+				if (this.accountability && !isAdmin(this.accountability)) {
 					throw new InvalidPayloadError({ reason: `You can't change the "provider" value manually` });
 				}
 
@@ -288,7 +289,7 @@ export class UsersService extends ItemsService {
 			}
 
 			if (data['external_identifier'] !== undefined) {
-				if (this.accountability && this.accountability.admin !== true) {
+				if (this.accountability && !isAdmin(this.acceptInvite)) {
 					throw new InvalidPayloadError({ reason: `You can't change the "external_identifier" value manually` });
 				}
 

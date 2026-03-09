@@ -18,6 +18,7 @@ import { GraphQLVoid } from '../types/void.js';
 import { sanitizeGraphqlSchema } from '../utils/sanitize-gql-schema.js';
 import { getReadableTypes } from './read.js';
 import { getWritableTypes } from './write.js';
+import { isAdmin } from '../../../utils/isAdmin.js';
 
 export type Schema = { read: SchemaOverview; create: SchemaOverview; update: SchemaOverview; delete: SchemaOverview };
 export type InconsistentFields = {
@@ -76,7 +77,7 @@ export async function generateSchema(
 
 		const sanitizedSchema = sanitizeGraphqlSchema(gql.schema);
 
-		if (!gql.accountability || gql.accountability.admin) {
+		if (!gql.accountability ||isAdmin(gql.accountability)) {
 			schema = {
 				read: sanitizedSchema,
 				create: sanitizedSchema,
