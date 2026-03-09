@@ -27,6 +27,7 @@ import { findMcpTool, getAllMcpTools } from '../tools/index.js';
 import type { ToolConfig, ToolResult } from '../tools/types.js';
 import { DirectusTransport } from './transport.js';
 import type { MCPOptions, Prompt } from './types.js';
+import { isAdmin } from '../../utils/isAdmin.js';
 
 export class DirectusMCP {
 	promptsCollection?: string | null;
@@ -60,7 +61,7 @@ export class DirectusMCP {
 	 * response being an asynchronous side effect happening after the function has returned
 	 */
 	handleRequest(req: Request, res: Response) {
-		if (!req.accountability?.user && !req.accountability?.role && req.accountability?.admin !== true) {
+		if (!req.accountability?.user && !req.accountability?.role && !isAdmin(req.accountability??null )) {
 			throw new ForbiddenError();
 		}
 
@@ -196,7 +197,7 @@ export class DirectusMCP {
 			const tools = [];
 
 			for (const tool of getAllMcpTools()) {
-				if (req.accountability?.admin !== true && tool.admin === true) continue;
+				if (!isAdmin(req.accountability??null) !== true && tool.admin === true) continue;
 				if (tool.name === 'system-prompt' && this.systemPromptEnabled === false) continue;
 
 				tools.push({
@@ -219,7 +220,7 @@ export class DirectusMCP {
 					throw new InvalidPayloadError({ reason: `"${request.params.name}" doesn't exist in the toolset` });
 				}
 
-				if (req.accountability?.admin !== true && tool.admin === true) {
+				if (!isAdmin(req.accountability??null)&& tool.admin === true) {
 					throw new ForbiddenError({ reason: 'You must be an admin to access this tool' });
 				}
 
