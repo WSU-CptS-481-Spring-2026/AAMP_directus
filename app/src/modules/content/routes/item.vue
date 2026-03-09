@@ -989,8 +989,11 @@ function useItemNavigation() {
 
 <style lang="scss" scoped>
 .action-delete {
+	--v-button-background-color: transparent;
 	--v-button-background-color-hover: var(--theme--danger) !important;
+	--v-button-color: var(--theme--danger);
 	--v-button-color-hover: var(--white) !important;
+	margin-inline-end: 24px;
 }
 
 .header-icon.secondary {
