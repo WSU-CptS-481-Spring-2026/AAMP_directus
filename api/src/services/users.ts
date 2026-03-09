@@ -289,7 +289,7 @@ export class UsersService extends ItemsService {
 			}
 
 			if (data['external_identifier'] !== undefined) {
-				if (this.accountability && !isAdmin(this.acceptInvite)) {
+				if (this.accountability && !isAdmin(this.accountability)) {
 					throw new InvalidPayloadError({ reason: `You can't change the "external_identifier" value manually` });
 				}
 
