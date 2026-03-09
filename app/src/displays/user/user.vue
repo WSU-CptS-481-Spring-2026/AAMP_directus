@@ -5,6 +5,7 @@ import VImage from '@/components/v-image.vue';
 import { getAssetUrl } from '@/utils/get-asset-url';
 import { userName } from '@/utils/user-name';
 import UserPopover from '@/views/private/components/user-popover.vue';
+import { ref, watch } from 'vue';
 
 const props = withDefaults(
 	defineProps<{
@@ -17,33 +18,38 @@ const props = withDefaults(
 	},
 );
 
-const src = computed(() => {
-	if (props.value === null || !props.value.avatar?.id) return null;
+const src = ref<string | null>(null);
 
-	return getAssetUrl(props.value.avatar.id, {
-		imageKey: 'system-small-cover',
-		cacheBuster: props.value.avatar.modified_on,
-	});
-});
+watch(
+	() => ({
+		hasValue: props.value !== null,
+		avatarId: props.value?.avatar?.id ?? null,
+		modifiedOn: props.value?.avatar?.modified_on ?? null,
+	}),
+	({ hasValue, avatarId, modifiedOn }) => {
+		if (avatarId) {
+			src.value = getAssetUrl(avatarId, {
+				imageKey: 'system-small-cover',
+				cacheBuster: modifiedOn,
+			});
+		} else if (hasValue) {
+			src.value = null;
+		}
+	},
+	{ immediate: true }
+);
 </script>
 
 <template>
 	<UserPopover v-if="value" :user="value.id">
 		<div class="user" :class="display">
-			<VImage
-				v-if="(display === 'avatar' || display === 'both') && src"
-				:src="src"
-				role="presentation"
-				:alt="value && userName(value)"
-				:class="{ circle }"
-			/>
-			<img
-				v-else-if="(display === 'avatar' || display === 'both') && src === null"
-				src="../../assets/avatar-placeholder.svg"
-				role="presentation"
-				:alt="value && userName(value)"
-				:class="{ circle }"
-			/>
+	<img
+		v-if="display === 'avatar' || display === 'both'"
+		:src="src ?? '../assets/avatar-placeholder.svg'"
+		role="presentation"
+		:alt="value && userName(value)"
+		:class="{ circle }"
+	/>
 			<span v-if="display === 'name' || display === 'both'">{{ userName(value) }}</span>
 		</div>
 	</UserPopover>
