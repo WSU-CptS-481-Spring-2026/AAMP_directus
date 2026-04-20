@@ -13,6 +13,7 @@ import { applyDiff } from '../utils/apply-diff.js';
 import { getSnapshotDiff } from '../utils/get-snapshot-diff.js';
 import { getSnapshot } from '../utils/get-snapshot.js';
 import { getVersionedHash } from '../utils/get-versioned-hash.js';
+import { isAdmin } from '../utils/is-admin.js';
 import { validateApplyDiff } from '../utils/validate-diff.js';
 import { validateSnapshot } from '../utils/validate-snapshot.js';
 
@@ -26,7 +27,7 @@ export class SchemaService {
 	}
 
 	async snapshot(): Promise<Snapshot> {
-		if (this.accountability?.admin !== true) throw new ForbiddenError();
+		if (!isAdmin(this.accountability)) throw new ForbiddenError();
 
 		const currentSnapshot = await getSnapshot({ database: this.knex });
 
@@ -34,7 +35,7 @@ export class SchemaService {
 	}
 
 	async apply(payload: SnapshotDiffWithHash): Promise<void> {
-		if (this.accountability?.admin !== true) throw new ForbiddenError();
+		if (!isAdmin(this.accountability)) throw new ForbiddenError();
 
 		const currentSnapshot = await this.snapshot();
 		const snapshotWithHash = this.getHashedSnapshot(currentSnapshot);
@@ -48,7 +49,7 @@ export class SchemaService {
 		snapshot: Snapshot,
 		options?: { currentSnapshot?: Snapshot; force?: boolean },
 	): Promise<SnapshotDiff | null> {
-		if (this.accountability?.admin !== true) throw new ForbiddenError();
+		if (!isAdmin(this.accountability)) throw new ForbiddenError();
 
 		validateSnapshot(snapshot, options?.force);
 
