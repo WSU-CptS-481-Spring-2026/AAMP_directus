@@ -2,6 +2,7 @@ import { useEnv } from '@directus/env';
 import { ForbiddenError } from '@directus/errors';
 import { Router } from 'express';
 import { useMetrics } from '../metrics/index.js';
+import { isAdmin } from '../utils/is-admin.js';
 import asyncHandler from '../utils/async-handler.js';
 
 const env = useEnv();
@@ -11,7 +12,7 @@ const metrics = useMetrics();
 router.get(
 	'/',
 	asyncHandler(async (req, _res, next) => {
-		if (req.accountability?.admin === true) {
+		if (isAdmin(req.accountability)) {
 			return next();
 		}
 
