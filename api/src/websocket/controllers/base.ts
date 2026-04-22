@@ -131,6 +131,8 @@ export default abstract class SocketController {
 
 		const accountabilityOverrides: UpgradeContext['accountabilityOverrides'] = {
 			ip: getIPFromReq(request) ?? null,
+			userAgent: null,
+			origin: null,
 		};
 
 		const userAgent = request.headers['user-agent']?.substring(0, 1024);
@@ -141,15 +143,8 @@ export default abstract class SocketController {
 		const context: UpgradeContext = { request, socket, head, accountabilityOverrides };
 
 		if (this.authentication.mode === 'strict' || query['access_token'] || cookies[sessionCookieName]) {
-			let token: string | null = null;
-
-			if (typeof query['access_token'] === 'string') {
-				token = query['access_token'];
-			} else if (typeof cookies[sessionCookieName] === 'string') {
-				token = cookies[sessionCookieName] ?? null;
-			}
-
-			await this.handleTokenUpgrade(context, token);
+			const tokenInfo = this.getTokenFromUpgradeRequest(query, cookies, sessionCookieName);
+			await this.handleTokenUpgrade(context, tokenInfo.token);
 			return;
 		}
 
@@ -166,8 +161,27 @@ export default abstract class SocketController {
 				expires_at: null,
 			} as AuthenticationState;
 
-			this.server.emit('connection', ws, state);
+			this.emitConnection(ws, state);
 		});
+	}
+
+	private getTokenFromUpgradeRequest(
+		query: Record<string, unknown>,
+		cookies: Record<string, unknown>,
+		sessionCookieName: string,
+	): { hasTokenFromRequest: boolean; token: string | null } {
+		// Pick token from query/cookie.
+		let token: string | null = null;
+
+		if (typeof query['access_token'] === 'string') {
+			token = query['access_token'];
+		} else if (typeof cookies[sessionCookieName] === 'string') {
+			token = cookies[sessionCookieName] ?? null;
+		}
+
+		// Keep existing has-token decision semantics.
+		const hasTokenFromRequest = Boolean(query['access_token'] || cookies[sessionCookieName]);
+		return { hasTokenFromRequest, token };
 	}
 
 	protected async handleTokenUpgrade(
@@ -182,33 +196,43 @@ export default abstract class SocketController {
 				const state = await authenticateConnection({ access_token: token }, accountabilityOverrides);
 				accountability = state.accountability;
 				expires_at = state.expires_at;
-			} catch {
+			} catch (error) {
+				void error;
 				accountability = null;
 				expires_at = null;
 			}
 		}
 
 		if (!token || !accountability || !accountability.user) {
-			logger.debug('WebSocket upgrade denied - ' + JSON.stringify(accountability || 'invalid'));
-			socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
-			socket.destroy();
+			this.denyUpgrade401(socket, accountability);
 			return;
 		}
 
 		try {
 			this.checkUserRequirements(accountability);
-		} catch {
-			logger.debug('WebSocket upgrade denied - ' + JSON.stringify(accountability || 'invalid'));
-			socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
-			socket.destroy();
+		} catch (error) {
+			void error;
+			this.denyUpgrade401(socket, accountability);
 			return;
 		}
 
 		this.server.handleUpgrade(request, socket, head, async (ws) => {
 			this.catchInvalidMessages(ws);
 			const state = { accountability, expires_at } as AuthenticationState;
-			this.server.emit('connection', ws, state);
+			this.emitConnection(ws, state);
 		});
+	}
+
+	private denyUpgrade401(socket: internal.Duplex, accountability: Accountability | null) {
+		// 401 upgrade denial: log + write + destroy.
+		logger.debug('WebSocket upgrade denied - ' + JSON.stringify(accountability || 'invalid'));
+		socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+		socket.destroy();
+	}
+
+	private emitConnection(ws: WebSocket, state: AuthenticationState) {
+		// Emit connection after auth succeeds.
+		this.server.emit('connection', ws, state);
 	}
 
 	protected async handleHandshakeUpgrade({ request, socket, head, accountabilityOverrides }: UpgradeContext) {
@@ -225,11 +249,12 @@ export default abstract class SocketController {
 
 				ws.send(authenticationSuccess(payload['uid'], state.refresh_token));
 
-				this.server.emit('connection', ws, state);
-			} catch {
+				this.emitConnection(ws, state);
+			} catch (err) {
+				void err;
 				logger.debug('WebSocket authentication handshake failed');
-				const error = new WebSocketError('auth', 'AUTH_FAILED', 'Authentication handshake failed.');
-				handleWebSocketError(ws, error, 'auth');
+				const wsError = new WebSocketError('auth', 'AUTH_FAILED', 'Authentication handshake failed.');
+				handleWebSocketError(ws, wsError, 'auth');
 				ws.close();
 			}
 		});
